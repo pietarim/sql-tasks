@@ -1,0 +1,8 @@
+POST http://localhost:3001/api/blogs
+content-type: application/json
+
+{
+  "title": "How to get a jerb",
+  "author": "Koodimestari",
+  "url": "www.koodimestari.fi"
+}
