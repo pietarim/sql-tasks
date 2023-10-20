@@ -50,4 +50,10 @@ const rollbackMigration = async () => {
   const migrator = new Umzug(migrationConf)
   await migrator.down()}
 
-module.exports = { connectToDatabase, sequelize, rollbackMigration }
+const rollbackToFirst = async () => {
+  await sequelize.authenticate()
+  const migrator = new Umzug(migrationConf)
+  await migrator.down({ to: 0 })
+}
+
+module.exports = { connectToDatabase, sequelize, rollbackMigration, rollbackToFirst }

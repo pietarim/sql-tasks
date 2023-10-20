@@ -91,7 +91,8 @@ router.post('/', tokenExtractor, /*middleware.userExtractor, */ async (request, 
     if (e.message.includes('Validation max on year failed') || e.message.includes('Validation min on year failed')) {
       return response.status(400).json({ error: 'year must be between 1991 and 2021' })
     }
-    console.log(e.message)
+    console.log(e)
+    console.log('ennen viimeistä riviä post ketjussa')
     response.status(400).end()
   }
 })

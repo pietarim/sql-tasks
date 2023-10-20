@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { User, Blog } = require('../models')
+const { User, Blog, ReadingList } = require('../models')
 require('express-async-errors')
 const { tokenExtractor } = require('../util/middleware')
 
@@ -13,6 +13,34 @@ const isAdmin = async (req, res, next) => {
   next()
 }
 
+router.get('/:id', async (req, res) => {
+  try {
+    console.log('REEEEEEEEEEEEEEEEEEE')
+    const userId = parseInt(req.params.id)
+    const user = await User.findByPk((userId), {
+      include: [
+        {
+          model: Blog,
+          as: 'blogs',
+          attributes: ['title', 'author', 'url', 'likes', 'id']
+        },
+        {
+          model: Blog,
+          as: 'future_read',
+          attributes: ['title', 'author', 'url', 'likes', 'id']
+
+        }
+      ]
+    })
+    /*  const blogs = await user.getTo_read({}) */
+    /* console.log(blogs) */
+    res.json(user)
+  } catch (e) {
+    console.log(e)
+    console.log(e.message)
+    res.status(400).end()
+  }
+})
 /* aaaaaaaaa uusin */
 
 router.get('/', async (req, res) => {
@@ -20,6 +48,7 @@ router.get('/', async (req, res) => {
     .findAll({
       include: {
         model: Blog,
+        as: 'blogs',
         attributes: ['title']
       }
     })

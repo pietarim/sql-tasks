@@ -2,10 +2,10 @@ const Blog = require('./blog')
 const User = require('./user')
 const ReadingList = require('./readingList')
 
-User.hasMany(Blog)
+User.hasMany(Blog, { as: 'blogs' })
 Blog.belongsTo(User)
-Blog.hasMany(ReadingList)
-User.hasMany(ReadingList)
+User.belongsToMany(Blog, { through: ReadingList, as: 'future_read' })
+Blog.belongsToMany(User, { through: ReadingList, as: 'to_read' })
 
 module.exports = {
   Blog, User, ReadingList

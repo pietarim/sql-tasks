@@ -25,7 +25,6 @@ module.exports = {
       },
       author: {
         type: DataTypes.STRING,
-        unique: true,
         allowNull: false
       },
       url: {
