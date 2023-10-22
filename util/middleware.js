@@ -1,6 +1,7 @@
 const logger = require('./logger')
 const jwt = require('jsonwebtoken')
 const { SECRET } = require('./config')
+const User = require('../models/user')
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
@@ -38,7 +39,17 @@ const tokenExtractor = (req, res, next) => {
   next()
 }
 
-const userExtractor = (request, response, next) => {
+const isActiveSession = (req, res, next) => {
+  const userId = req.decodedToken.id
+  const activeUser = User.findByPk(userId).where('activeSession', true)
+  if (!activeUser) {
+    return res.status(401).json({ error: 'session expired' })
+  }
+  next()
+}
+
+
+/* const userExtractor = (request, response, next) => {
   console.log('222222222222')
   const token = request.token
   const decodedToken = jwt.verify(token, process.env.SECRET)
@@ -48,12 +59,14 @@ const userExtractor = (request, response, next) => {
   request.user = decodedToken
   
   next()
-}
+} */
+
+
 
 module.exports = {
+  isActiveSession,
   requestLogger,
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
-  userExtractor
 }

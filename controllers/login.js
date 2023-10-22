@@ -7,15 +7,9 @@ const User = require('../models/user')
 router.post('/', async (request, response) => {
   const body = request.body
   try {
-    const allUsers = await User.findAll()
-    console.log(allUsers)
-    console.log('täällä on kaikki users yläpuolella')
-    console.log(body.username)
-    const user = await User.findOne({
-      where: {
-        username: body.username
-      }
-    })
+    const user = await User.update({ activeSession: true }, { where: {
+      username: body.username
+    } })
 
     const passwordCorrect = body.password === 'secret'
 
@@ -41,6 +35,7 @@ router.post('/', async (request, response) => {
     response
       .status(200)
       .send(token)
+
   } catch(e) {
     console.log(e.message)
     return response.status(401).json({

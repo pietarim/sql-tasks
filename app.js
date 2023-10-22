@@ -8,6 +8,7 @@ const blogRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const authorRouter = require('./controllers/author')
+const logoutRouter = require('./controllers/logout')
 const middleware = require('./util/middleware')
 const { connectToDatabase } = require('./util/db')
 /* const logger = require('./utils/logger')*/
@@ -39,14 +40,14 @@ app.use('/api/login', loginRouter)
 app.use('/api/blogs', blogRouter)
 app.use('/api/author', authorRouter)
 app.use('/api/readinglist', readinglistRouter)
+app.use('/api/logout', logoutRouter)
+app.use('/api/users', usersRouter)
 
 /* if (process.env.NODE_ENV === 'test') {
   const testingRouter = require('./controllers/testing')  
   app.use('/api/testing', testingRouter)
 } */
 
-app.use('/api/users', usersRouter)
-/* app.use(middleware.tokenExtractor) */
 
 
 app.use(middleware.unknownEndpoint)

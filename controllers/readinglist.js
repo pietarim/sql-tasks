@@ -12,4 +12,17 @@ router.post('/', async (req, res) => {
   }
 })
 
+router.put('/:id', async (req, res) => {
+  const { id } = req.params
+  try {
+    const readingList = await ReadingList.findByPk(id)
+    readingList.read = true
+    await readingList.save({ read: readingList.read })
+    res.status(204).end()
+  } catch(e) {
+    console.log(e.message)
+    res.status(400).end()
+  }
+})
+
 module.exports = router

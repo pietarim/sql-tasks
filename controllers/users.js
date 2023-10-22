@@ -1,9 +1,7 @@
 const router = require('express').Router()
-const { User, Blog, ReadingList } = require('../models')
+const { User, Blog } = require('../models')
 require('express-async-errors')
-const { tokenExtractor } = require('../util/middleware')
-
-/* aaaaaaaaa uusin */
+const { tokenExtractor, isActiveSession } = require('../util/middleware')
 
 const isAdmin = async (req, res, next) => {
   const user = await User.findByPk(req.decodedToken.id)
@@ -14,34 +12,78 @@ const isAdmin = async (req, res, next) => {
 }
 
 router.get('/:id', async (req, res) => {
-  try {
-    console.log('REEEEEEEEEEEEEEEEEEE')
-    const userId = parseInt(req.params.id)
-    const user = await User.findByPk((userId), {
-      include: [
-        {
-          model: Blog,
-          as: 'blogs',
-          attributes: ['title', 'author', 'url', 'likes', 'id']
-        },
-        {
-          model: Blog,
-          as: 'future_read',
-          attributes: ['title', 'author', 'url', 'likes', 'id']
+  const { read, id } = req.params
+  const userId = parseInt(id)
+  if (read === undefined) {
+    try {
+      const user = await User.findByPk((userId), {
+        include: [
+          {
+            model: Blog,
+            as: 'blogs',
+            attributes: ['title', 'author', 'url', 'likes', 'id']
+          },
+        ]
+      })
+      res.json(user)
+    } catch (e) {
+      console.log(e)
+      res.status(400).end()
+    }
+  } else if (read === true) {
+    try {
+      const user = await User.findByPk((userId), {
+        include: [
+          {
+            model: Blog,
+            as: 'blogs',
+            attributes: ['title', 'author', 'url', 'likes', 'id']
+          },
+          {
+            model: Blog,
+            as: 'readinglists',
+            attributes: ['title', 'author', 'url', 'likes', 'id'],
+            where: { read: true },
+            through: {
+              attributes: ['id', 'read']
+            }
 
-        }
-      ]
-    })
-    /*  const blogs = await user.getTo_read({}) */
-    /* console.log(blogs) */
-    res.json(user)
-  } catch (e) {
-    console.log(e)
-    console.log(e.message)
-    res.status(400).end()
+          }
+        ]
+      })
+      res.json(user)
+    } catch (e) {
+      console.log(e.message)
+      res.status(400).end()
+    }
+  } else {
+    try {
+      const user = await User.findByPk((userId), {
+        include: [
+          {
+            model: Blog,
+            as: 'blogs',
+            attributes: ['title', 'author', 'url', 'likes', 'id']
+          },
+          {
+            model: Blog,
+            as: 'readinglists',
+            attributes: ['title', 'author', 'url', 'likes', 'id'],
+            where: { read: false },
+            through: {
+              attributes: ['id', 'read']
+            }
+
+          }
+        ]
+      })
+      res.json(user)
+    } catch (e) {
+      console.log(e)
+      res.status(400).end()
+    }
   }
 })
-/* aaaaaaaaa uusin */
 
 router.get('/', async (req, res) => {
   User
@@ -64,7 +106,7 @@ router.get('/', async (req, res) => {
 
 /* aaaaaaaaaaaa uusi */
 
-router.put('/:username', tokenExtractor, isAdmin, async (req, res) => {
+router.put('/:username', tokenExtractor, isAdmin, isActiveSession, async (req, res) => {
   const user = await User.findOne({
     where: {
       username: req.params.username
