@@ -15,53 +15,57 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (error, request, response, next) => {
-  logger.error(error.message)
+  console.log(error.message)
+  console.log('errorHandler = (error, request, response) => {' )
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
+  } else if (error.message === 'invalid token') {
+    return response.status(401).json({ error: 'invalid token' })
   }
-  next(error)
+  return response.status(500).json({ error: error.message })
 }
 
-const tokenExtractor = (req, res, next) => {
-  const authorization = req.get('authorization')
+const tokenExtractor = async (req, res, next) => {
+  const authorization = req.get('Authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    try {
-      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)    
-    } catch {
-      return res.status(401).json({ error: 'token invalid' })
-    }  
+    const token = jwt.verify(authorization.substring(7), SECRET)
+    const user = await User.findByPk(token.id)
+    if (!user) {
+      throw new Error('invalid token')
+    }
+    if (user.disabled) {
+      throw new Error('account disabled, please contact admin')
+    }
+    if (!user.activeSession) {
+      throw new Error('invalid token')
+    }
+    console.log(token)
+    req.decodedToken = token
   }  else {
-    return res.status(401).json({ error: 'token missing' })  
+    throw new Error('invalid token') 
   }  
   next()
 }
 
 const isActiveSession = (req, res, next) => {
+  console.log('isActiveSession = (req, res, next) => { req.decodedToken')
+  console.log(req.decodedToken)
   const userId = req.decodedToken.id
-  const activeUser = User.findByPk(userId).where('activeSession', true)
+  const activeUser = User.findByPk(userId, {
+    where: {
+      activeSession: true
+    }
+  })
   if (!activeUser) {
-    return res.status(401).json({ error: 'session expired' })
+    const error = new Error('session expired')
+    next(error)
   }
   next()
 }
-
-
-/* const userExtractor = (request, response, next) => {
-  console.log('222222222222')
-  const token = request.token
-  const decodedToken = jwt.verify(token, process.env.SECRET)
-  if (!token || !decodedToken.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
-  }
-  request.user = decodedToken
-  
-  next()
-} */
-
-
 
 module.exports = {
   isActiveSession,

@@ -29,6 +29,10 @@ User.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  active_session: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 }, { 
   sequelize,
   underscored: true,

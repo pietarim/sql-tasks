@@ -3,8 +3,8 @@ const { DataTypes } = require('sequelize')
 module.exports = {
   up: async ({ context: queryInterface }) => {
     await queryInterface.addColumn('users', 'active_session', {
-      type: DataTypes.STRING,
-      allowNull: true
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     })
   },
   down: async ({ context: queryInterface }) => {

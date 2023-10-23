@@ -11,7 +11,8 @@ const isAdmin = async (req, res, next) => {
   next()
 }
 
-router.get('/:id', async (req, res) => {
+// eslint-disable-next-line no-unused-vars
+router.get('/:id', async (req, res, next) => {
   const { read, id } = req.params
   const userId = parseInt(id)
   if (read === undefined) {
@@ -56,7 +57,7 @@ router.get('/:id', async (req, res) => {
       console.log(e.message)
       res.status(400).end()
     }
-  } else {
+  } else if (read === false) {
     try {
       const user = await User.findByPk((userId), {
         include: [
@@ -86,7 +87,7 @@ router.get('/:id', async (req, res) => {
 })
 
 router.get('/', async (req, res) => {
-  User
+  const users = User
     .findAll({
       include: {
         model: Blog,
@@ -94,19 +95,15 @@ router.get('/', async (req, res) => {
         attributes: ['title']
       }
     })
-    .then(users => {
-      res.json(users)
-    })
-    .catch((error) => {
-      console.log(error.message)
-      res.status(400).end()
-    }
-    )
+  if (!users) {
+    throw new Error('no users found')
+  }
+  res.json(users)
 })
 
 /* aaaaaaaaaaaa uusi */
 
-router.put('/:username', tokenExtractor, isAdmin, isActiveSession, async (req, res) => {
+router.put('/:username', tokenExtractor, isAdmin, async (req, res) => {
   const user = await User.findOne({
     where: {
       username: req.params.username
@@ -114,7 +111,7 @@ router.put('/:username', tokenExtractor, isAdmin, isActiveSession, async (req, r
   })
 
   if (user) {
-    user.disabled = req.body.disabled
+    user.disabled = true
     await user.save()
     res.json(user)
   } else {

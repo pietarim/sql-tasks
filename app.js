@@ -1,7 +1,7 @@
 /* const config = require('./utils/config') */
+require('express-async-errors')
 const express = require('express')
 const app = express()
-/* require('express-async-errors') */
 const cors = require('cors')
 const readinglistRouter = require('./controllers/readinglist')
 const blogRouter = require('./controllers/blogs')
@@ -42,6 +42,8 @@ app.use('/api/author', authorRouter)
 app.use('/api/readinglist', readinglistRouter)
 app.use('/api/logout', logoutRouter)
 app.use('/api/users', usersRouter)
+app.use(middleware.unknownEndpoint)
+app.use(middleware.errorHandler)
 
 /* if (process.env.NODE_ENV === 'test') {
   const testingRouter = require('./controllers/testing')  
@@ -50,7 +52,5 @@ app.use('/api/users', usersRouter)
 
 
 
-app.use(middleware.unknownEndpoint)
-app.use(middleware.errorHandler)
 
 module.exports = app
