@@ -1,4 +1,3 @@
-/* const config = require('./utils/config') */
 require('express-async-errors')
 const express = require('express')
 const app = express()
@@ -11,13 +10,6 @@ const authorRouter = require('./controllers/author')
 const logoutRouter = require('./controllers/logout')
 const middleware = require('./util/middleware')
 const { connectToDatabase } = require('./util/db')
-/* const logger = require('./utils/logger')*/
-/* const { main } = require('./models/blog') */
-
-
-/* logger.info('connecting to', config.MONGODB_URI) */ 
-
-
 
 app.use(cors())
 app.use(express.static('build'))
@@ -25,7 +17,7 @@ app.use(express.static('build'))
 const start = async () => {
   try {
     await connectToDatabase()
-    console.log('connection is a o k')
+    console.log('Connected to database')
   } catch {
     console.log('connection failed')
   }
@@ -33,7 +25,6 @@ const start = async () => {
 
 start()
 
-/* main() */
 app.use(express.json())
 app.use(middleware.requestLogger)
 app.use('/api/login', loginRouter)
@@ -44,13 +35,5 @@ app.use('/api/logout', logoutRouter)
 app.use('/api/users', usersRouter)
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
-
-/* if (process.env.NODE_ENV === 'test') {
-  const testingRouter = require('./controllers/testing')  
-  app.use('/api/testing', testingRouter)
-} */
-
-
-
 
 module.exports = app

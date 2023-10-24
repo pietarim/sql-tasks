@@ -1,15 +1,6 @@
 const router = require('express').Router()
-const { User, Blog, ReadingList } = require('../models')
+const { User, Blog } = require('../models')
 require('express-async-errors')
-const { tokenExtractor/* , isActiveSession */ } = require('../util/middleware')
-
-const isAdmin = async (req, res, next) => {
-  const user = await User.findByPk(req.decodedToken.id)
-  if (!user.admin) {
-    return res.status(401).json({ error: 'operation not allowed' })
-  }
-  next()
-}
 
 // eslint-disable-next-line no-unused-vars
 router.get('/:id', async (req, res, next) => {
@@ -19,11 +10,6 @@ router.get('/:id', async (req, res, next) => {
   if (read === undefined) {
     const user = await User.findByPk((userId), {
       include: [
-        /* {
-          model: Blog,
-          as: 'blogs',
-          attributes: ['title', 'author', 'url', 'likes', 'id']
-        }, */
         {
           model: Blog,
           as: 'readings',
@@ -54,7 +40,8 @@ router.get('/:id', async (req, res, next) => {
   }
 })
 
-router.get('/', async (req, res) => {
+// eslint-disable-next-line no-unused-vars
+router.get('/', async (req, res, next) => {
   const users = await User
     .findAll({
       include: {
@@ -69,32 +56,23 @@ router.get('/', async (req, res) => {
   res.json(users)
 })
 
-router.put('/:username', async (req, res) => {
+// eslint-disable-next-line no-unused-vars
+router.put('/:username', async (req, res, next) => {
   const newUsername = req.body.username
-  /* const user = await User.findOne({
-    where: {
-      username: req.params.username
-    }
-  })
-
-  if (user) { */
   const count = await User.update({ username: newUsername }, {
     where: {
       username: req.params.username
     }
   })
   if (count) {
-    console.log(count)
     res.status(204).end()
   } else {
     throw new Error('Something went wrong')
   }
-  /* } else {
-    throw new Error('user not found')
-  } */
 })
 
-router.post('/', async (req, res) => {
+// eslint-disable-next-line no-unused-vars
+router.post('/', async (req, res, next) => {
   const body = req.body
   const newUser = await User.create(body)
   res.status(201).json(newUser)

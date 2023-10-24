@@ -1,36 +1,8 @@
 const router = require('express').Router()
 const { Blog, User } = require('../models')
 require('express-async-errors')
-/* const jwt = require('jsonwebtoken')
-const { SECRET } = require('../util/config') */
 const { Op } = require('sequelize')
-const { tokenExtractor, isActiveSession } = require('../util/middleware')
-/* const User = require('../models/user') */
-/* const middleware = require('../util/middleware') */
-
-/* const isActiveSession = (req, res, next) => {
-  const userId = req.decodedToken.id
-  const activeUser = User.findByPk(userId).where('activeSession', true)
-  if (!activeUser) {
-    return res.status(401).json({ error: 'session expired' })
-  }
-  next()
-} */
-
-
-/* const tokenExtractor = (req, res, next) => {
-  const authorization = req.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    try {
-      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
-    } catch {
-      return res.status(401).json({ error: 'token invalid' })
-    }  
-  }  else {
-    return res.status(401).json({ error: 'token missing' })  
-  }  
-  next()
-} */
+const { tokenExtractor } = require('../util/middleware')
 
 const blogFinder = async (request, response, next) => {
   request.blog = await Blog.findByPk(request.params.id)
@@ -77,14 +49,10 @@ router.get('/', (request, response) => {
 })
 
 // eslint-disable-next-line no-unused-vars
-router.post('/', tokenExtractor, /* isActiveSession, */ async (request, response, next) => {
-  console.log('post polkastu käyntiin')
+router.post('/', tokenExtractor, async (request, response, next) => {
   const body = request.body
   const author = request.decodedToken.name
-
-  /* try { */
   const newBlog = await Blog.create({ ...body, userId: request.decodedToken.id, author })
-  /* const newBlog = await blog.save() */
   if (newBlog) {
     return response.status(201).json(newBlog)
   } else {
@@ -100,27 +68,18 @@ router.delete('/:id', tokenExtractor, async (request, response) => {
   return response.status(204).end()
 })
 
-router.put('/:id', blogFinder, tokenExtractor, async (request, response) => {
-  console.log('put alku')
+// eslint-disable-next-line no-unused-vars
+router.put('/:id', blogFinder, tokenExtractor, async (request, response, next) => {
   const matchingUser = User.findByPk(request.decodedToken.id)
-  console.log('kysely tehty')
   if (matchingUser.id) {
     return response.status(401).json({ error: 'unauthorized' })
   }
-  request.blog.likes += 1 // 2
-  const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } }) // 1
-  console.log('Ennen returnia')
-  if (numberOfAltereRows === 0) { // 1
+  request.blog.likes += 1
+  const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } })
+  if (numberOfAltereRows === 0) {
     return response.status(400).end()
   }
-  return response.status(204).json({ likes: request.blog.likes }) // {'likes': 2}
-  /* request.blog.save()
-    .then(() => {
-      response.status(204).send({ likes: request.blog.likes })
-    })
-    .catch(() => {
-      response.status(400).end()
-    }) */
+  return response.status(204).json({ likes: request.blog.likes })
 })
 
 module.exports = router
