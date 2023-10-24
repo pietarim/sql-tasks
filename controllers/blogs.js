@@ -77,12 +77,13 @@ router.get('/', (request, response) => {
 })
 
 // eslint-disable-next-line no-unused-vars
-router.post('/', tokenExtractor, isActiveSession, async (request, response, next) => {
+router.post('/', tokenExtractor, /* isActiveSession, */ async (request, response, next) => {
   console.log('post polkastu käyntiin')
   const body = request.body
+  const author = request.decodedToken.name
 
   /* try { */
-  const newBlog = await Blog.create({ ...body, userId: request.decodedToken.id })
+  const newBlog = await Blog.create({ ...body, userId: request.decodedToken.id, author })
   /* const newBlog = await blog.save() */
   if (newBlog) {
     return response.status(201).json(newBlog)
@@ -91,30 +92,28 @@ router.post('/', tokenExtractor, isActiveSession, async (request, response, next
   }
 })
 
-router.delete('/:id', blogFinder, tokenExtractor, isActiveSession, async (request, response) => {
-  const matchingUser = User.findByPk(request.decodedToken.id)
-  if (matchingUser.id) {
+router.delete('/:id', tokenExtractor, async (request, response) => {
+  const count = await Blog.destroy({ where: { id: request.params.id, user_id: request.decodedToken.id } })
+  if (count === 0) {
     return response.status(401).json({ error: 'unauthorized' })
   }
-  await Blog.destroy({ where: { id: request.blog.id } })
   return response.status(204).end()
 })
 
-router.put('/:id', blogFinder, tokenExtractor, isActiveSession, async (request, response) => {
+router.put('/:id', blogFinder, tokenExtractor, async (request, response) => {
   console.log('put alku')
   const matchingUser = User.findByPk(request.decodedToken.id)
   console.log('kysely tehty')
   if (matchingUser.id) {
     return response.status(401).json({ error: 'unauthorized' })
   }
-  request.blog.likes += 1
-  const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } })
-  console.log(typeof updated)
+  request.blog.likes += 1 // 2
+  const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } }) // 1
   console.log('Ennen returnia')
-  if (numberOfAltereRows === 0) {
+  if (numberOfAltereRows === 0) { // 1
     return response.status(400).end()
   }
-  return response.status(204).end({ likes: request.blog.likes })
+  return response.status(204).json({ likes: request.blog.likes }) // {'likes': 2}
   /* request.blog.save()
     .then(() => {
       response.status(204).send({ likes: request.blog.likes })

@@ -33,8 +33,17 @@ router.post('/', async (request, response) => {
   await User.update({ active_session: true }, { where: {
     id: user.id
   } })
+  
+  console.log(777777777)
+  console.log(user.name)
+  console.log({
+    name: user.name,
+    username: user.username,
+    id: user.id,
+  })
 
   const userForToken = {
+    name: user.name,
     username: user.username,
     id: user.id,
   }

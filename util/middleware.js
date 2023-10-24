@@ -33,17 +33,25 @@ const tokenExtractor = async (req, res, next) => {
   const authorization = req.get('Authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     const token = jwt.verify(authorization.substring(7), SECRET)
+    console.log('BBBBBB')
+    console.log(token)
+    console.log(token.name)
     const user = await User.findByPk(token.id)
+    console.log('AAAAAA')
+    console.log(user)
+    console.log(user.name)
     if (!user) {
       throw new Error('invalid token')
     }
+    console.log(111111111)
     if (user.disabled) {
       throw new Error('account disabled, please contact admin')
     }
-    if (!user.activeSession) {
+    console.log(2222222222)
+    if (!user.active_session) {
       throw new Error('invalid token')
     }
-    console.log(token)
+    console.log(3333333333)
     req.decodedToken = token
   }  else {
     throw new Error('invalid token') 
