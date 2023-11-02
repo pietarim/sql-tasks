@@ -56,14 +56,17 @@ router.post('/', tokenExtractor, async (request, response, next) => {
   if (newBlog) {
     return response.status(201).json(newBlog)
   } else {
-    return response.status(400).end()
+    throw new Error('bad request')
+    /* return response.status(400).end() */
   }
 })
 
-router.delete('/:id', tokenExtractor, async (request, response) => {
+// eslint-disable-next-line no-unused-vars
+router.delete('/:id', tokenExtractor, async (request, response, next) => {
   const count = await Blog.destroy({ where: { id: request.params.id, user_id: request.decodedToken.id } })
   if (count === 0) {
-    return response.status(401).json({ error: 'unauthorized' })
+    throw new Error('unauthorized')
+    /* return response.status(401).json({ error: 'unauthorized' }) */
   }
   return response.status(204).end()
 })
@@ -72,7 +75,8 @@ router.delete('/:id', tokenExtractor, async (request, response) => {
 router.put('/:id', blogFinder, tokenExtractor, async (request, response, next) => {
   const matchingUser = User.findByPk(request.decodedToken.id)
   if (matchingUser.id) {
-    return response.status(401).json({ error: 'unauthorized' })
+    throw new Error('unauthorized')
+    /* return response.status(401).json({ error: 'unauthorized' }) */
   }
   request.blog.likes += 1
   const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } })
