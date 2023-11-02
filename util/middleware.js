@@ -25,6 +25,12 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).json({ error: error.message })
   } else if (error.message === 'invalid token') {
     return response.status(401).json({ error: 'invalid token' })
+  } else if (error.message === 'unauthorized') {
+    return response.status(401).json({ error: 'unauthorized' })
+  } else if (error.message === 'Validation error: Validation isEmail on username failed') {
+    return response.status(400).json({ error: 'invalid email' })
+  } else if (error.message === '404') {
+    return response.status(404).json({ error: 'not found' })
   }
   return response.status(500).json({ error: error.message })
 }

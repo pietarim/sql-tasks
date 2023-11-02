@@ -4,15 +4,6 @@ const { Umzug, SequelizeStorage } = require('umzug')
 
 const sequelize = new Sequelize(DATABASE_URL)
 
-/* const sequelize = new Sequelize(DATABASE_URL, {
-  dialectOptions: {
-    ssl: {
-      require: false,
-      rejectUnauthorized: false
-    }
-  },
-}) */
-
 const connectToDatabase = async () => {
   try {
     await sequelize.authenticate()

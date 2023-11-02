@@ -64,10 +64,11 @@ router.put('/:username', async (req, res, next) => {
       username: req.params.username
     }
   })
-  if (count) {
+  console.log(count)
+  if (count[0] !== 0) {
     res.status(204).end()
   } else {
-    throw new Error('Something went wrong')
+    throw new Error(404)
   }
 })
 

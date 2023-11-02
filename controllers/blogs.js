@@ -9,7 +9,8 @@ const blogFinder = async (request, response, next) => {
   next()
 }
 
-router.get('/', (request, response) => {
+// eslint-disable-next-line no-unused-vars
+router.get('/', async (request, response, next) => {
   const where = {}
 
   const search = request.query.search
@@ -28,7 +29,7 @@ router.get('/', (request, response) => {
     ]
   }
 
-  Blog
+  const blog = await Blog
     .findAll({
       attributes: { exclude: ['userId'] },
       include: {
@@ -40,12 +41,12 @@ router.get('/', (request, response) => {
         ['likes', 'DESC']
       ]
     })
-    .then(blogs => {
-      response.json(blogs)
-    })
-    .catch(() => {
-      response.status(400).end()
-    })
+  
+  if (!blog) {
+    throw new Error('no blogs found')
+  }
+
+  response.json(blog)
 })
 
 // eslint-disable-next-line no-unused-vars
@@ -66,24 +67,24 @@ router.delete('/:id', tokenExtractor, async (request, response, next) => {
   const count = await Blog.destroy({ where: { id: request.params.id, user_id: request.decodedToken.id } })
   if (count === 0) {
     throw new Error('unauthorized')
-    /* return response.status(401).json({ error: 'unauthorized' }) */
   }
   return response.status(204).end()
 })
 
 // eslint-disable-next-line no-unused-vars
 router.put('/:id', blogFinder, tokenExtractor, async (request, response, next) => {
+  const { likes } = request.body
   const matchingUser = User.findByPk(request.decodedToken.id)
   if (matchingUser.id) {
     throw new Error('unauthorized')
-    /* return response.status(401).json({ error: 'unauthorized' }) */
   }
-  request.blog.likes += 1
-  const [numberOfAltereRows] = await Blog.update({ likes: request.blog.likes }, { where: { id: request.blog.id } })
-  if (numberOfAltereRows === 0) {
-    return response.status(400).end()
+  const blog = await Blog.findByPk(request.params.id)
+  if (!blog) {
+    throw new Error('404')
   }
-  return response.status(204).json({ likes: request.blog.likes })
+  blog.likes = likes
+  const newBlog = await blog.save()
+  return response.status(200).json(newBlog)
 })
 
 module.exports = router
